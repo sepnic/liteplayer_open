@@ -21,7 +21,6 @@
 #include <alsa/asoundlib.h>
 #include "cutils/memory_helper.h"
 #include "cutils/log_helper.h"
-#include "liteplayer_debug.h"
 #include "sink_alsa_wrapper.h"
 
 #define TAG "[liteplayer]alsa"
