@@ -15,8 +15,8 @@ endif()
 # cflags: OS_LINUX, OS_ANDROID, OS_APPLE, OS_RTOS
 set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} -DOS_APPLE")
 
-set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -std=gnu99 -Wall -Werror")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Werror")
+set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -std=gnu99 -Wall")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall")
 
 # include files
 include_directories(${TOP_DIR}/thirdparty/sysutils/include)
@@ -69,7 +69,6 @@ elseif(HAVE_PORT_AUDIO_ENABLED)
     else()
         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DPA_LITTLE_ENDIAN")
     endif()
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=deprecated-declarations")
     set(PORTAUDIO_SRC
         ${PORTAUDIO_DIR}/src/common/pa_allocation.c
         ${PORTAUDIO_DIR}/src/common/pa_converters.c
@@ -107,7 +106,6 @@ elseif(HAVE_PORT_AUDIO_ENABLED)
         ${TOP_DIR}/adapter/sink_portaudio_wrapper.c)
 endif()
 add_library(liteplayer_adapter STATIC ${LITEPLAYER_ADAPTER_SRC})
-target_compile_options(liteplayer_adapter PRIVATE -Wno-error=int-to-pointer-cast)
 
 # basic_demo
 add_executable(basic_demo basic_demo.c)
