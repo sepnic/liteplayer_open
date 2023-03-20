@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2022 Qinglong<sysu.zqlong@gmail.com>
+ * Copyright (C) 2019-2023 Qinglong<sysu.zqlong@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +20,11 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.os.Environment;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.core.app.ActivityCompat;
 
 import com.sepnic.liteplayer.Liteplayer;
@@ -39,52 +39,47 @@ public class MainActivity extends Activity {
     private Liteplayer mLiteplayer;
     private TextView mStatusView;
     private int mStatus;
+    private static final int PERMISSIONS_REQUEST_CODE_EXTERNAL_STORAGE = 1000;
 
-    private static final int LITEPLAYER_IDLE            = 0x00;
-    private static final int LITEPLAYER_INITED          = 0x01;
-    private static final int LITEPLAYER_PREPARED        = 0x02;
-    private static final int LITEPLAYER_STARTED         = 0x03;
-    private static final int LITEPLAYER_PAUSED          = 0x04;
-    private static final int LITEPLAYER_SEEKCOMPLETED   = 0x05;
-    private static final int LITEPLAYER_NEARLYCOMPLETED = 0x06;
-    private static final int LITEPLAYER_COMPLETED       = 0x07;
-    private static final int LITEPLAYER_STOPPED         = 0x08;
-    private static final int LITEPLAYER_ERROR           = 0xFF;
+    private void requestPermissions(Activity activity) {
+        // request external storage permissions
+        if (ActivityCompat.checkSelfPermission(activity, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            String[] PERMISSION_EXTERNAL_STORAGE =
+                    new String[]{ Manifest.permission.READ_EXTERNAL_STORAGE };
+            ActivityCompat.requestPermissions(activity, PERMISSION_EXTERNAL_STORAGE, PERMISSIONS_REQUEST_CODE_EXTERNAL_STORAGE);
+        }
+    }
 
-    // Storage Permissions
-    //private static final int REQUEST_EXTERNAL_STORAGE = 1;
-    //private static final String[] PERMISSIONS_STORAGE = {
-    //        Manifest.permission.READ_EXTERNAL_STORAGE,
-    //        Manifest.permission.WRITE_EXTERNAL_STORAGE
-    //};
-    /**
-     * Checks if the app has permission to write to device storage
-     * If the app does not has permission then the user will be prompted to
-     * grant permissions
-     */
-    //private void verifyStoragePermissions(Activity activity) {
-        // Check if we have write permission
-    //    int permission = ActivityCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-    //    if (permission != PackageManager.PERMISSION_GRANTED) {
-            // We don't have permission so prompt the user
-    //        ActivityCompat.requestPermissions(activity, PERMISSIONS_STORAGE, REQUEST_EXTERNAL_STORAGE);
-    //    }
-    //}
+    @Override
+    public void onRequestPermissionsResult(int permsRequestCode, String[] permissions, int[] grantResults) {
+        switch (permsRequestCode) {
+            case PERMISSIONS_REQUEST_CODE_EXTERNAL_STORAGE:
+                for (int result : grantResults) {
+                    if (result != PackageManager.PERMISSION_GRANTED) {
+                        Toast.makeText(this, "Failed request EXTERNAL_STORAGE permission", Toast.LENGTH_LONG).show();
+                        break;
+                    }
+                }
+                break;
+            default:
+                break;
+        }
+    }
 
-    private String getCacheMusicFromAsset(String assetFile) {
+    private String prepareAssetMusicFile(String assetFile) {
         try {
             File cacheDir = getCacheDir();
             if (!cacheDir.exists()) {
                 boolean res = cacheDir.mkdirs();
                 if (!res) {
-                    return "";
+                    return null;
                 }
             }
             File outFile = new File(cacheDir, assetFile);
             if (!outFile.exists()) {
                 boolean res = outFile.createNewFile();
                 if (!res) {
-                    return "";
+                    return null;
                 }
             } else {
                 if (outFile.length() > 0) {
@@ -105,7 +100,7 @@ public class MainActivity extends Activity {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return "";
+        return null;
     }
 
     @Override
@@ -113,11 +108,11 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        //verifyStoragePermissions(this);
+        requestPermissions(this);
 
         mStatusView = findViewById(R.id.statusView);
         mStatusView.setText("Idle");
-        mStatus = LITEPLAYER_IDLE;
+        mStatus = Liteplayer.LITEPLAYER_IDLE;
 
         mLiteplayer = new Liteplayer();
         mLiteplayer.setOnIdleListener(mIdleListener);
@@ -134,48 +129,21 @@ public class MainActivity extends Activity {
         mLiteplayer.release();
         super.onDestroy();
     }
-/*
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        switch (keyCode) {
-            case KeyEvent.KEYCODE_VOLUME_UP:
-                Log.d(TAG, "Receive KEYCODE_VOLUME_UP, start/pause playing");
-                if (mStatus == LITEPLAYER_IDLE) {
-                    //String music = "http://ailabsaicloudservice.alicdn.com/player/resources/23a2d715f019c0e345235f379fa26a30.mp3";
-                    String music = getCacheMusicFromAsset("test.m4a");
-                    mLiteplayer.setDataSource(music);
-                    mLiteplayer.prepareAsync();
-                } if (mStatus == LITEPLAYER_STARTED) {
-                    mLiteplayer.pause();
-                }
-                else if (mStatus == LITEPLAYER_PAUSED || mStatus == LITEPLAYER_SEEKCOMPLETED) {
-                    mLiteplayer.resume();
-                }
-                return true;
-            case KeyEvent.KEYCODE_VOLUME_DOWN:
-                Log.d(TAG, "Receive KEYCODE_VOLUME_DOWN, stop playing");
-                if (mStatus != LITEPLAYER_IDLE) {
-                    mLiteplayer.reset();
-                }
-                return true;
-        }
-        return super.onKeyDown(keyCode, event);
-    }
-*/
+
     public void onStartClick(View view) {
-        if (mStatus == LITEPLAYER_IDLE) {
+        if (mStatus == Liteplayer.LITEPLAYER_IDLE) {
             //String music = Environment.getExternalStorageDirectory().getAbsolutePath() + "/test.mp3";
             //String music = "https://dl.espressif.com/dl/audio/ff-16b-2c-44100hz.mp3";
-            String music = getCacheMusicFromAsset("test.m4a");
+            String music = prepareAssetMusicFile("test.mp3");
             mLiteplayer.setDataSource(music);
             mLiteplayer.prepareAsync();
-        } else if (mStatus == LITEPLAYER_PAUSED || mStatus == LITEPLAYER_SEEKCOMPLETED) {
+        } else if (mStatus == Liteplayer.LITEPLAYER_PAUSED || mStatus == Liteplayer.LITEPLAYER_SEEKCOMPLETED) {
             mLiteplayer.resume();
         }
     }
 
     public void onPauseClick(View view) {
-        if (mStatus == LITEPLAYER_STARTED) {
+        if (mStatus == Liteplayer.LITEPLAYER_STARTED) {
             mLiteplayer.pause();
         }
     }
@@ -192,21 +160,21 @@ public class MainActivity extends Activity {
     }
 
     public void onStopClick(View view) {
-        if (mStatus != LITEPLAYER_IDLE) {
+        if (mStatus != Liteplayer.LITEPLAYER_IDLE) {
             mLiteplayer.reset();
         }
     }
 
     private final Liteplayer.OnIdleListener mIdleListener = new Liteplayer.OnIdleListener() {
         public void onIdle(Liteplayer p) {
-            mStatus = LITEPLAYER_IDLE;
+            mStatus = Liteplayer.LITEPLAYER_IDLE;
             mStatusView.setText("Idle");
         }
     };
 
     private final Liteplayer.OnPreparedListener mPreparedListener = new Liteplayer.OnPreparedListener() {
         public void onPrepared(Liteplayer p) {
-            mStatus = LITEPLAYER_PREPARED;
+            mStatus = Liteplayer.LITEPLAYER_PREPARED;
             mStatusView.setText("Prepared");
             p.start();
         }
@@ -214,14 +182,14 @@ public class MainActivity extends Activity {
 
     private final Liteplayer.OnStartedListener mStartedListener = new Liteplayer.OnStartedListener() {
         public void onStarted(Liteplayer p) {
-            mStatus = LITEPLAYER_STARTED;
+            mStatus = Liteplayer.LITEPLAYER_STARTED;
             mStatusView.setText("Started");
         }
     };
 
     private final Liteplayer.OnPausedListener mPausedListener = new Liteplayer.OnPausedListener() {
         public void onPaused(Liteplayer p) {
-            mStatus = LITEPLAYER_PAUSED;
+            mStatus = Liteplayer.LITEPLAYER_PAUSED;
             mStatusView.setText("Paused");
         }
     };
@@ -229,7 +197,7 @@ public class MainActivity extends Activity {
     private final Liteplayer.OnSeekCompletedListener mSeekCompletedListener = new Liteplayer.OnSeekCompletedListener() {
         public void onSeekCompleted(Liteplayer p) {
             mStatusView.setText("SeekCompleted");
-            if (mStatus != LITEPLAYER_PAUSED) {
+            if (mStatus != Liteplayer.LITEPLAYER_PAUSED) {
                 p.start();
             }
         }
@@ -237,7 +205,7 @@ public class MainActivity extends Activity {
 
     private final Liteplayer.OnCompletedListener mCompletedListener = new Liteplayer.OnCompletedListener() {
         public void onCompleted(Liteplayer p) {
-            mStatus = LITEPLAYER_COMPLETED;
+            mStatus = Liteplayer.LITEPLAYER_COMPLETED;
             mStatusView.setText("Completed");
             mLiteplayer.reset();
         }
@@ -245,7 +213,7 @@ public class MainActivity extends Activity {
 
     private final Liteplayer.OnErrorListener mErrorListener = new Liteplayer.OnErrorListener() {
         public void onError(Liteplayer p, int what, int extra) {
-            mStatus = LITEPLAYER_ERROR;
+            mStatus = Liteplayer.LITEPLAYER_ERROR;
             mStatusView.setText("Error");
             mLiteplayer.reset();
         }

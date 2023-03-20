@@ -1,18 +1,17 @@
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 30
-    buildToolsVersion "30.0.1"
+    compileSdkVersion 33
+
+    ndkVersion "25.2.9519653"
 
     defaultConfig {
         minSdkVersion 22
-        targetSdkVersion 30
-        versionCode 1
-        versionName "1.0"
+        targetSdkVersion 33
 
         externalNativeBuild {
             cmake {
-                cppFlags ""
+                arguments '-DANDROID_STL=c++_static'
             }
             ndk {
                 abiFilters "arm64-v8a", "armeabi-v7a"
@@ -28,14 +27,14 @@ android {
 
         android.libraryVariants.all { variant ->
             variant.outputs.all {
-                outputFileName = "Liteplayer.aar"
+                outputFileName = "liteplayer.aar"
             }
         }
     }
     externalNativeBuild {
         cmake {
             path "src/main/cpp/CMakeLists.txt"
-            version "3.10.2"
         }
     }
+    namespace 'com.sepnic.liteplayer'
 }

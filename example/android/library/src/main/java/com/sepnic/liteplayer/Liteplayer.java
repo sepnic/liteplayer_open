@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2022 Qinglong<sysu.zqlong@gmail.com>
+ * Copyright (C) 2019-2023 Qinglong<sysu.zqlong@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,16 +27,16 @@ import android.media.AudioTrack;
 import java.lang.ref.WeakReference;
 
 public class Liteplayer {
-    private static final int LITEPLAYER_IDLE            = 0x00;
-    private static final int LITEPLAYER_INITED          = 0x01;
-    private static final int LITEPLAYER_PREPARED        = 0x02;
-    private static final int LITEPLAYER_STARTED         = 0x03;
-    private static final int LITEPLAYER_PAUSED          = 0x04;
-    private static final int LITEPLAYER_SEEKCOMPLETED   = 0x05;
-    private static final int LITEPLAYER_NEARLYCOMPLETED = 0x06;
-    private static final int LITEPLAYER_COMPLETED       = 0x07;
-    private static final int LITEPLAYER_STOPPED         = 0x08;
-    private static final int LITEPLAYER_ERROR           = 0xFF;
+    public static final int LITEPLAYER_IDLE            = 0x00;
+    public static final int LITEPLAYER_INITED          = 0x01;
+    public static final int LITEPLAYER_PREPARED        = 0x02;
+    public static final int LITEPLAYER_STARTED         = 0x03;
+    public static final int LITEPLAYER_PAUSED          = 0x04;
+    public static final int LITEPLAYER_SEEKCOMPLETED   = 0x05;
+    public static final int LITEPLAYER_NEARLYCOMPLETED = 0x06;
+    public static final int LITEPLAYER_COMPLETED       = 0x07;
+    public static final int LITEPLAYER_STOPPED         = 0x08;
+    public static final int LITEPLAYER_ERROR           = 0xFF;
 
     private final static String TAG = "LitelayerJava";
     private long mPlayerHandle;
@@ -76,58 +76,58 @@ public class Liteplayer {
                     Log.i(TAG, "-->LITEPLAYER_IDLE");
                     if (mOnIdleListener != null)
                         mOnIdleListener.onIdle(mLiteplayer);
-                    return;
+                    break;
 
                 case LITEPLAYER_PREPARED:
                     Log.i(TAG, "-->LITEPLAYER_PREPARED");
                     if (mOnPreparedListener != null)
                         mOnPreparedListener.onPrepared(mLiteplayer);
-                    return;
+                    break;
 
                 case LITEPLAYER_STARTED:
                     Log.i(TAG, "-->LITEPLAYER_STARTED");
                     if (mOnStartedListener != null)
                         mOnStartedListener.onStarted(mLiteplayer);
-                    return;
+                    break;
 
                 case LITEPLAYER_PAUSED:
                     Log.i(TAG, "-->LITEPLAYER_PAUSED");
                     if (mOnPausedListener != null)
                         mOnPausedListener.onPaused(mLiteplayer);
-                    return;
+                    break;
 
                 case LITEPLAYER_SEEKCOMPLETED:
                     Log.i(TAG, "-->LITEPLAYER_SEEKCOMPLETED");
                     if (mOnSeekCompletedListener != null)
                         mOnSeekCompletedListener.onSeekCompleted(mLiteplayer);
-                    return;
+                    break;
 
                 case LITEPLAYER_NEARLYCOMPLETED:
                     Log.i(TAG, "-->LITEPLAYER_NEARLYCOMPLETED");
                     if (mOnNearlyCompletedListener != null)
                         mOnNearlyCompletedListener.onNearlyCompleted(mLiteplayer);
-                    return;
+                    break;
 
                 case LITEPLAYER_COMPLETED:
                     Log.i(TAG, "-->LITEPLAYER_COMPLETED");
                     if (mOnCompletedListener != null)
                         mOnCompletedListener.onCompleted(mLiteplayer);
-                    return;
+                    break;
 
                 case LITEPLAYER_STOPPED:
                     Log.i(TAG, "-->LITEPLAYER_STOPPED");
                     if (mOnStoppedListener != null)
                         mOnStoppedListener.onStopped(mLiteplayer);
-                    return;
+                    break;
 
                 case LITEPLAYER_ERROR:
                     Log.e(TAG, "-->LITEPLAYER_ERROR: (" + msg.arg1 + "," + msg.arg2 + ")");
                     if (mOnErrorListener != null)
                         mOnErrorListener.onError(mLiteplayer, msg.arg1, msg.arg2);
-                    return;
+                    break;
 
                 default:
-                    return;
+                    break;
             }
         }
     }
@@ -136,7 +136,7 @@ public class Liteplayer {
      * Called from native code when an interesting event happens.  This method
      * just uses the EventHandler system to post the event back to the main app thread.
      */
-    private static void postEventFromNative(Object liteplayer_ref, int state, int errno) {
+    private static void onStateChangedFromNative(Object liteplayer_ref, int state, int errno) {
         Liteplayer p = (Liteplayer)((WeakReference)liteplayer_ref).get();
         if (p == null) {
             return;
@@ -147,7 +147,7 @@ public class Liteplayer {
         }
     }
 
-    private static int openAudioTrackFromNative(Object liteplayer_ref, int sampleRateInHz, int numberOfChannels, int sampleBits) {
+    private static int onPcmOpenFromNative(Object liteplayer_ref, int sampleRateInHz, int numberOfChannels, int sampleBits) {
         Liteplayer p = (Liteplayer)((WeakReference)liteplayer_ref).get();
         if (p == null) {
             return -1;
@@ -177,7 +177,7 @@ public class Liteplayer {
         return 0;
     }
 
-    private static int writeAudioTrackFromNative(Object liteplayer_ref, byte[] audioData, int sizeInBytes) {
+    private static int onPcmWriteFromNative(Object liteplayer_ref, byte[] audioData, int sizeInBytes) {
         Liteplayer p = (Liteplayer)((WeakReference)liteplayer_ref).get();
         if (p == null || p.mAudioTrack == null) {
             return -1;
@@ -190,7 +190,7 @@ public class Liteplayer {
         return p.mAudioTrack.write(audioData, 0, sizeInBytes);
     }
 
-    private static void closeAudioTrackFromNative(Object liteplayer_ref) {
+    private static void onPcmCloseFromNative(Object liteplayer_ref) {
         Liteplayer p = (Liteplayer)((WeakReference)liteplayer_ref).get();
         if (p == null || p.mAudioTrack == null) {
             return;

@@ -1,7 +1,12 @@
 cmake_minimum_required(VERSION 3.4.1)
+project(liteplayer_jni)
 
 set(TOP_DIR "${CMAKE_SOURCE_DIR}/../../../../../..")
 set(LIB_DIR "${TOP_DIR}/lib/android")
+
+# include files
+include_directories(${TOP_DIR}/include)
+include_directories(${TOP_DIR}/adapter)
 
 # cflags: compile paramters
 set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -std=gnu99 -Wall -Werror")
@@ -27,7 +32,8 @@ set(SYSUTILS_SRC
 add_library(sysutils STATIC ${SYSUTILS_SRC})
 target_compile_options(sysutils PRIVATE -DOS_ANDROID -DSYSUTILS_HAVE_MBEDTLS_ENABLED)
 target_include_directories(sysutils PRIVATE
-    ${TOP_DIR}/thirdparty/sysutils/include ${TOP_DIR}/thirdparty/mbedtls/include)
+    ${TOP_DIR}/thirdparty/sysutils/include
+    ${TOP_DIR}/thirdparty/mbedtls/include)
 
 # liteplayer_adapter
 set(LITEPLAYER_ADAPTER_SRC
@@ -43,5 +49,4 @@ set_target_properties(liteplayer_core PROPERTIES IMPORTED_LOCATION "${LIB_DIR}/$
 
 # liteplayer-jni
 add_library(liteplayer-jni SHARED liteplayer-jni.cpp)
-target_include_directories(liteplayer-jni PRIVATE ${TOP_DIR}/include ${TOP_DIR}/adapter)
-target_link_libraries(liteplayer-jni liteplayer_core liteplayer_adapter sysutils mbedtls android log)
+target_link_libraries(liteplayer-jni liteplayer_core liteplayer_adapter sysutils mbedtls OpenSLES android log)
