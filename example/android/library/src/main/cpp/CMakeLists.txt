@@ -28,6 +28,7 @@ set(SYSUTILS_SRC
     ${TOP_DIR}/thirdparty/sysutils/source/cutils/mlooper.c
     ${TOP_DIR}/thirdparty/sysutils/source/cutils/mqueue.c
     ${TOP_DIR}/thirdparty/sysutils/source/cutils/ringbuf.c
+    ${TOP_DIR}/thirdparty/sysutils/source/cutils/lockfree_ringbuf.c
     ${TOP_DIR}/thirdparty/sysutils/source/httpclient/httpclient.c)
 add_library(sysutils STATIC ${SYSUTILS_SRC})
 target_compile_options(sysutils PRIVATE -DOS_ANDROID -DSYSUTILS_HAVE_MBEDTLS_ENABLED)
